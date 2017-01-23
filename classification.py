@@ -1,14 +1,17 @@
-import os
+import os, fnmatch
+import pandas as pd
 import h5py
 import numpy as np
-from keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing import image
 from keras.models import Sequential
 from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers import Activation, Dropout, Flatten, Dense
+from keras.applications.vgg16 import preprocess_input
 
 # path to the model weights file.
 weights_path = 'vgg16_weights.h5'
 top_model_weights_path = 'bottleneck_fc_model.h5'
+full_model = 'full_model.h5'
 # dimensions of our images.
 img_width, img_height = 150, 150
 
@@ -18,9 +21,8 @@ nb_train_samples = 2000
 nb_validation_samples = 800
 nb_epoch = 50
 
-
 def save_bottlebeck_features():
-    datagen = ImageDataGenerator(rescale=1./255)
+    datagen = image.ImageDataGenerator(rescale=1./255)
 
     # build the VGG16 network
     model = Sequential()
@@ -115,7 +117,7 @@ def train_top_model():
               nb_epoch=nb_epoch, batch_size=32,
               validation_data=(validation_data, validation_labels))
     model.save_weights(top_model_weights_path)
-
+    model.save(full_model)
 
 save_bottlebeck_features()
 train_top_model()

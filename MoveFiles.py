@@ -15,7 +15,7 @@ for file in os.listdir('.'):
 
     if fnmatch.fnmatch(file, cat_match_string):
       destination = './cats/cats/' + file
-      # os.rename(file, destination)
+      os.rename(file, destination)
       print file
       print destination
 

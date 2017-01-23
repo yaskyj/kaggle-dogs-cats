@@ -1,15 +1,20 @@
-import os
+import os, fnmatch
+import pandas as pd
 import h5py
 import numpy as np
-from keras.preprocessing.image import ImageDataGenerator
+from keras.preprocessing import image
 from keras import optimizers
 from keras.models import Sequential
 from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers import Activation, Dropout, Flatten, Dense
+from keras.applications.vgg16 import preprocess_input
+from keras.models import load_model, model_from_json
+import scipy.misc
 
 # path to the model weights files.
 weights_path = 'vgg16_weights.h5'
 top_model_weights_path = 'bottleneck_fc_model.h5'
+complete_model_weights = 'complete_model_weights.h5'
 # dimensions of our images.
 img_width, img_height = 150, 150
 
@@ -17,7 +22,7 @@ train_data_dir = 'data/train'
 validation_data_dir = 'data/validation'
 nb_train_samples = 2000
 nb_validation_samples = 800
-nb_epoch = 2
+nb_epoch = 50
 
 # build the VGG16 network
 model = Sequential()
@@ -101,13 +106,13 @@ model.compile(loss='binary_crossentropy',
               metrics=['accuracy'])
 
 # prepare data augmentation configuration
-train_datagen = ImageDataGenerator(
+train_datagen = image.ImageDataGenerator(
         rescale=1./255,
         shear_range=0.2,
         zoom_range=0.2,
         horizontal_flip=True)
 
-test_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = image.ImageDataGenerator(rescale=1./255)
 
 train_generator = train_datagen.flow_from_directory(
         train_data_dir,
@@ -128,3 +133,7 @@ model.fit_generator(
         nb_epoch=nb_epoch,
         validation_data=validation_generator,
         nb_val_samples=nb_validation_samples)
+
+model_json = model.to_json()
+open('cats_dogs_architecture.json', 'w').write(model_json)
+model.save_weights(complete_model_weights)
